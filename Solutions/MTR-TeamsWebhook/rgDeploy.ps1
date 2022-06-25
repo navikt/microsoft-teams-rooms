@@ -24,7 +24,7 @@ Write-Host "Working in context $($context.Subscription.Name) [$($context.Subscri
 
 # Deploy Bicep
 $params = @{
-    Name                  = $DeploymentName
+    Name                  = $DeploymentName + '-' + (Get-Date -Format yyMMdd-HHmmss).ToString()
     TemplateFile          = $TemplateFile
     Location              = $Location
     TemplateParameterFile = "$PSScriptRoot/secrets.json"
