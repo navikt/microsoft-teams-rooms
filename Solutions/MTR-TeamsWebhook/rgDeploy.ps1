@@ -1,50 +1,90 @@
 param (
     [string]$DeploymentName = "MTR-TeamsWebhook",
-    [string]$Location = "norwayeast",
+    [string]$ResourceGroupName,
     [string]$TemplateFile = "$PSScriptRoot/bicep/main.bicep",
-    [Parameter(Mandatory = $true)]
-    [string]$subscription = ""
+    [string]$TemplateParameterFile,
+    [string]$Location = "norwayeast"
 )
 
+$ErrorActionPreference = 'Stop'
+
 function Disconnect-AzureSubscription {
-    Write-Host "Logger av"
+    Write-Host "Logging off"
     $null = Disconnect-AzAccount -Scope CurrentUser
 }
 
-#set context
+#get context
 $context = try {
-    Set-AzContext $subscription
+    Get-AzContext
 }
 catch {
     Write-Warning "Unable to set subscription context, aborting"
-    $_.Exception.Message
+    $Error[0].Exception.Message
     exit 1
 }
 Write-Host "Working in context $($context.Subscription.Name) [$($context.Subscription.id)]"
+
+#create resource group
+Write-Host "Checking for existence of resource group $resourceGroupName"
+$rg = Get-AzResourceGroup -Name $resourceGroupName -ErrorAction SilentlyContinue
+if ($rg) {
+    Write-Host "Resource group $resourceGroupName exists"
+}
+else {
+    Write-Host "Resource group $rgName not found - creating it..."
+    $subTags = Get-AzTag -ResourceId "/subscriptions/$($context.Subscription.Id)"
+    [hashtable]$tags = $subTags.Properties.TagsProperty
+    try {
+        New-AzResourceGroup -Name $resourceGroupName -Location $Location -Tag $tags
+    }
+    catch {
+        Write-Warning "Unable to create resource group:"
+        $Error[0].Exception.Message
+        exit 1
+    }
+}
+
+#check for parameter file
+Write-Host "Checking for existence of parameter file"
+try {
+    Test-Path -Path $TemplateParameterFile
+    Write-Host 'Parameter file found, continuing...'
+}
+catch {
+    Write-Error "Parameter file not found!"
+    exit 1
+}
 
 # Deploy Bicep
 $params = @{
     Name                  = $DeploymentName + '-' + (Get-Date -Format yyMMdd-HHmmss).ToString()
     TemplateFile          = $TemplateFile
-    Location              = $Location
-    TemplateParameterFile = "$PSScriptRoot/secrets.json"
+    TemplateParameterFile = $TemplateParameterFile
+    ResourceGroupName     = $ResourceGroupName
 }
 
 Write-Host "Deploying $DeploymentName"
 
-$deploy = New-AzDeployment @params -ErrorAction SilentlyContinue -ErrorVariable deployErr
+$deploy = New-AzResourceGroupDeployment @params
 
 if ($deploy.ProvisioningState -eq 'Succeeded') {
     Write-Host 'Deploy finished'
+    $deploy
+    exit 0
 }
 elseif ($deploy) {
     Write-Warning "Deployment did not finish as expected"
     $deploy
+    $deployOperation = (Get-AzResourceGroupDeploymentOperation -DeploymentName $params.Name -ResourceGroupName $params.ResourceGroupName)
+
+    Write-Host "Printing out status code and status message"
+    $deployOperation.StatusCode
+    $deployOperation.StatusMessage
     exit 1
 }
 else {
     Write-Warning "Deploy failed!"
-    $deployErr
+    $error[0]
     exit 1
 }
 
@@ -61,7 +101,7 @@ $pArchive = @{
 }
 
 $zip = try {
-    Write-Host "Oppretter zip-fil for function app [$($funcAppName)]"
+    Write-Host "Creating zip-file for function app [$($funcAppName)]"
     Compress-Archive @pArchive
 }
 catch {
@@ -82,7 +122,7 @@ $pPublish = @{
 }
 
 $psSite = try {
-    Write-Host "Deployer function app zip-fil [$($zip.Name)]"
+    Write-Host "Deploying function app zip-file [$($zip.Name)]"
     Publish-AzWebApp @pPublish
 }
 catch {
@@ -95,6 +135,6 @@ if ($null -eq $psSite) {
     exit 1
 }
 
-Write-Host "Ferdig!"
+Write-Host "Done!"
 Disconnect-AzureSubscription
 exit 0
