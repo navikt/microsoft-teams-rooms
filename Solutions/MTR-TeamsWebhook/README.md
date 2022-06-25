@@ -6,7 +6,7 @@ This is a complete solution which will create a resource group with everything n
 
 | Filename                     | Comment                                               |
 | ---------------------------- | ----------------------------------------------------- |
-| deploy.ps1                   | is used to deploy the solution (see Quickstart below) |
+| rgDeploy.ps1                 | is used to deploy the solution (see Quickstart below) |
 | bicep\main.bicep             | takes care of creating all the required resources     |
 | funcApp\health\run.ps1       | is the actual script that will run                    |
 | funcApp\health\function.json | is the schedule                                       |
@@ -27,7 +27,7 @@ If your language is not Norwegian you probably want to change some things `funcA
 1. [Create a Webhook connector](https://docs.microsoft.com/en-us/microsoftteams/platform/webhooks-and-connectors/how-to/add-incoming-webhook) in the teams channel you want to notify.
 2. [Create an app registration in azure](https://docs.microsoft.com/en-us/azure/active-directory/develop/quickstart-register-app) with a "credential" (secret)
 3. TODO: Give app correct permissions(????) 
-4. Create a `secrets.json` file in the root folder (same folder as deploy.ps1) using some information from the above two steps:
+4. Create a `secrets.json` file in the root folder (same folder as rgDeploy.ps1) using some information from the above two steps:
 ```json
 {
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
@@ -50,7 +50,7 @@ If your language is not Norwegian you probably want to change some things `funcA
 ```
 5. Install the [Az Powershell module](https://docs.microsoft.com/en-us/powershell/azure/install-az-ps), version 7 minimum (probably?)
 6. Run `Connect-AzAccount` and authenticate with an account that has enough access
-7. Run `.\deploy.ps1 -subscription <your azure subscription ID here>`
+7. Run `.\rgDeploy.ps1 -subscription <your azure subscription ID here>`
 
 Done!
 
