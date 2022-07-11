@@ -6,5 +6,11 @@
       "name": "myTimer",
       "schedule": "0 0 4,12 * * 1-5"
     }
-  ]
+  ],
+  "retry": {
+    "strategy": "exponentialBackoff",
+    "maxRetryCount": 5,
+    "minimumInterval": "00:00:10",
+    "maximumInterval": "00:15:00"
+  }
 }
