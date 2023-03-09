@@ -14,3 +14,8 @@ Questions related to this code or project can be created as issues here on GitHu
 Proper form for this repository would probably be for me to skrive på Norsk (write in Norwegian), but seeing as this repository (almost) exclusively deals within the technical domain and is not really "customer facing", I have decided to maintain everything in English. I don't expect my code to be of much use to anyone, but hopefully maintaining everything in English will give this a wider reach to *maybe* optimize the reach and helpfulness.
 
 Some parts will be in Norwegian *— like outbound messages to teams channels or alerts, —* but not code, comments or instruction unless I made a mistake :P
+
+# Documentation and links
+[Download the latest Microsoft Teams Room Deployment Kit](https://go.microsoft.com/fwlink/?linkid=851168)
+
+[Build a Microsoft Teams Rooms image](https://learn.microsoft.com/en-us/microsoftteams/rooms/console)
