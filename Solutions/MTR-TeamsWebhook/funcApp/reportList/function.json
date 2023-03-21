@@ -8,6 +8,11 @@
       "methods": [
         "post"
       ]
+    },
+    {
+      "type": "http",
+      "direction": "out",
+      "name": "Response"
     }
   ]
 }
